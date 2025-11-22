@@ -1,0 +1,227 @@
+[
+  {
+    "id": "sch_001",
+    "name": "Excellence in STEM Scholarship",
+    "amount": 5000,
+    "deadline": "2025-12-01",
+    "description": "This scholarship supports high-achieving students pursuing degrees in science, technology, engineering, or mathematics. It emphasizes rigorous academic performance, commitment to STEM research, and demonstrated curiosity in scientific exploration.",
+    "criteria_text": "Must be an undergraduate or incoming freshman majoring in a STEM discipline. Minimum GPA of 3.5. Applicants must submit a personal essay and one faculty recommendation.",
+    "tags": ["STEM", "Merit", "Undergraduate"]
+  },
+  {
+    "id": "sch_002",
+    "name": "Community Impact Leaders Award",
+    "amount": 3000,
+    "deadline": "2025-10-15",
+    "description": "Awarded to students who demonstrate exceptional commitment to community service and social impact through sustained volunteer work, advocacy, or community leadership.",
+    "criteria_text": "Open to all majors. Must provide documentation of at least 100 hours of community service and an essay describing long-term community impact.",
+    "tags": ["Community Service", "Leadership", "Undergraduate", "Social Impact"]
+  },
+  {
+    "id": "sch_003",
+    "name": "Future Innovators Engineering Grant",
+    "amount": 8000,
+    "deadline": "2025-11-20",
+    "description": "Supports engineering students who have demonstrated hands-on innovation, participation in maker projects, robotics, engineering competitions, or technical invention.",
+    "criteria_text": "Applicants must submit a portfolio of engineering work, project descriptions, or prototypes. 3.0 GPA minimum.",
+    "tags": ["Engineering", "Innovation", "Project-Based", "Undergraduate"]
+  },
+  {
+    "id": "sch_004",
+    "name": "Arts & Creative Expression Scholarship",
+    "amount": 2500,
+    "deadline": "2025-08-30",
+    "description": "Designed for students pursuing visual arts, design, performance, or creative writing who exhibit exceptional artistic vision and originality.",
+    "criteria_text": "Portfolio submission required. Open to both undergraduate and graduate artists in any creative field.",
+    "tags": ["Arts", "Creative", "Portfolio", "Undergraduate", "Graduate"]
+  },
+  {
+    "id": "sch_005",
+    "name": "First-Generation Student Success Scholarship",
+    "amount": 4000,
+    "deadline": "2025-09-10",
+    "description": "Provides financial support for first-generation college students who demonstrate resilience, academic promise, and commitment to overcoming barriers to education.",
+    "criteria_text": "Open to first-generation students only. Must submit short personal history essay.",
+    "tags": ["First-Generation", "Equity", "Undergraduate"]
+  },
+  {
+    "id": "sch_006",
+    "name": "Women in Computing Award",
+    "amount": 7000,
+    "deadline": "2025-12-05",
+    "description": "Recognizes outstanding women pursuing degrees in computer science, cybersecurity, AI, or related computing fields. Focuses on leadership potential in tech.",
+    "criteria_text": "Must be a woman majoring in computing. Demonstrated interest via projects, internships, or clubs.",
+    "tags": ["Women in Tech", "Computing", "STEM", "Diversity"]
+  },
+  {
+    "id": "sch_007",
+    "name": "Global Leadership & Cultural Exchange Scholarship",
+    "amount": 3500,
+    "deadline": "2025-07-01",
+    "description": "Supports students who have shown commitment to global citizenship, cross-cultural understanding, language learning, or international exchange.",
+    "criteria_text": "Essay required describing global or multicultural experiences. Open to all majors.",
+    "tags": ["Global Studies", "Leadership", "Cultural Exchange"]
+  },
+  {
+    "id": "sch_008",
+    "name": "Environmental Sustainability Fellowship",
+    "amount": 6000,
+    "deadline": "2025-11-01",
+    "description": "Awarded to students pursuing environmental science or sustainability-focused initiatives. Prioritizes applicants with hands-on conservation experience.",
+    "criteria_text": "Open to students in environmental fields. Project proposal or sustainability initiative required.",
+    "tags": ["Environment", "Sustainability", "STEM", "Project-Based"]
+  },
+  {
+    "id": "sch_009",
+    "name": "Future Educators Teaching Scholarship",
+    "amount": 3000,
+    "deadline": "2025-09-30",
+    "description": "Supports future K–12 educators dedicated to improving education quality, equity, and student engagement.",
+    "criteria_text": "Must be majoring in education. Teaching philosophy essay required.",
+    "tags": ["Education", "Teaching", "Undergraduate"]
+  },
+  {
+    "id": "sch_010",
+    "name": "Entrepreneurial Spirit Innovation Grant",
+    "amount": 5000,
+    "deadline": "2025-10-01",
+    "description": "For students developing entrepreneurial ventures or early-stage startups. Focuses on creativity, business vision, and feasibility.",
+    "criteria_text": "Business plan or prototype required. Open to any major.",
+    "tags": ["Entrepreneurship", "Innovation", "Business"]
+  },
+  {
+    "id": "sch_011",
+    "name": "Healthcare Heroes Scholarship",
+    "amount": 4500,
+    "deadline": "2025-12-10",
+    "description": "Supports students entering healthcare professions, emphasizing compassion, patient advocacy, and clinical excellence.",
+    "criteria_text": "Must be enrolled in a health sciences or pre-med program. Healthcare service experience recommended.",
+    "tags": ["Healthcare", "Pre-Med", "Nursing"]
+  },
+  {
+    "id": "sch_012",
+    "name": "Cybersecurity Achievement Award",
+    "amount": 6500,
+    "deadline": "2025-11-15",
+    "description": "Recognizes students pursuing cybersecurity fields with strong analytical and defensive security skills.",
+    "criteria_text": "Applicants must submit a security project, CTF write-up, or research summary.",
+    "tags": ["Cybersecurity", "STEM", "Computing"]
+  },
+  {
+    "id": "sch_013",
+    "name": "Journalism Integrity & Media Scholarship",
+    "amount": 2800,
+    "deadline": "2025-09-12",
+    "description": "Award for aspiring journalists who demonstrate excellence in storytelling, ethical reporting, or media innovation.",
+    "criteria_text": "Writing samples required. Open to journalism and communication majors.",
+    "tags": ["Journalism", "Media", "Writing"]
+  },
+  {
+    "id": "sch_014",
+    "name": "Rural Student Achievement Grant",
+    "amount": 5000,
+    "deadline": "2025-08-20",
+    "description": "Supports high-potential students from rural or underserved areas aiming to pursue higher education.",
+    "criteria_text": "Must be from a rural community. Essay describing background and goals required.",
+    "tags": ["Rural", "Equity", "Undergraduate"]
+  },
+  {
+    "id": "sch_015",
+    "name": "Business Leadership Merit Scholarship",
+    "amount": 4000,
+    "deadline": "2025-10-18",
+    "description": "For business majors with a record of leadership, teamwork, and professional ambition.",
+    "criteria_text": "Resume and leadership essay required. 3.3 GPA minimum.",
+    "tags": ["Business", "Leadership", "Merit"]
+  },
+  {
+    "id": "sch_016",
+    "name": "Creative Writing Emerging Authors Prize",
+    "amount": 2000,
+    "deadline": "2025-07-25",
+    "description": "Awarded to emerging writers with exceptional skill in fiction, poetry, or narrative nonfiction.",
+    "criteria_text": "Submit 2–3 writing samples. Open to all majors.",
+    "tags": ["Writing", "Creative", "Arts"]
+  },
+  {
+    "id": "sch_017",
+    "name": "Public Service & Policy Scholarship",
+    "amount": 6000,
+    "deadline": "2025-11-30",
+    "description": "Supports students pursuing political science, public policy, or social justice work aimed at improving civic life.",
+    "criteria_text": "Public service experience required. Policy-interest statement recommended.",
+    "tags": ["Public Policy", "Civic Engagement", "Leadership"]
+  },
+  {
+    "id": "sch_018",
+    "name": "AI & Machine Learning Research Fellowship",
+    "amount": 9000,
+    "deadline": "2025-12-20",
+    "description": "Recognizes students contributing to machine learning research, model development, or AI ethics studies.",
+    "criteria_text": "Research summary or published work preferred. Open to grad and undergrad.",
+    "tags": ["AI", "Machine Learning", "Research", "STEM"]
+  },
+  {
+    "id": "sch_019",
+    "name": "LGBTQ+ Student Empowerment Scholarship",
+    "amount": 3500,
+    "deadline": "2025-09-05",
+    "description": "Supports LGBTQ+ students who demonstrate advocacy, leadership, and commitment to equality.",
+    "criteria_text": "Open to LGBTQ+ identifying students. Advocacy essay required.",
+    "tags": ["LGBTQ+", "Equity", "Leadership"]
+  },
+  {
+    "id": "sch_020",
+    "name": "Humanities & Social Sciences Research Award",
+    "amount": 3000,
+    "deadline": "2025-10-09",
+    "description": "Supports students conducting significant humanities or social science research projects.",
+    "criteria_text": "Research proposal required. Faculty recommendation encouraged.",
+    "tags": ["Humanities", "Research", "Social Sciences"]
+  },
+  {
+    "id": "sch_021",
+    "name": "Future Nurses Compassion Grant",
+    "amount": 2500,
+    "deadline": "2025-08-15",
+    "description": "Award for nursing students demonstrating empathy, patient advocacy, and commitment to healthcare equity.",
+    "criteria_text": "Must be in a nursing program. Clinical experience strongly valued.",
+    "tags": ["Nursing", "Healthcare", "Compassion"]
+  },
+  {
+    "id": "sch_022",
+    "name": "Robotics & Automation Innovators Scholarship",
+    "amount": 7500,
+    "deadline": "2025-10-28",
+    "description": "Supports robotics students involved in automation design, AI-driven robotics, or competitive robotics teams.",
+    "criteria_text": "Project portfolio required. Participation in robotics competitions is a plus.",
+    "tags": ["Robotics", "Engineering", "STEM"]
+  },
+  {
+    "id": "sch_023",
+    "name": "Diversity in Law & Justice Scholarship",
+    "amount": 6000,
+    "deadline": "2025-09-25",
+    "description": "Promotes diversity in the legal field by supporting underrepresented students pursuing pre-law or legal studies.",
+    "criteria_text": "Open to underrepresented groups in law. Essay required.",
+    "tags": ["Law", "Diversity", "Social Justice"]
+  },
+  {
+    "id": "sch_024",
+    "name": "Data Science Impact Award",
+    "amount": 6500,
+    "deadline": "2025-11-22",
+    "description": "For students using data science to solve real-world problems in business, medicine, or social issues.",
+    "criteria_text": "Data project submission required. Open to all data-oriented majors.",
+    "tags": ["Data Science", "STEM", "Impact"]
+  },
+  {
+    "id": "sch_025",
+    "name": "Performing Arts Talent Scholarship",
+    "amount": 3000,
+    "deadline": "2025-06-30",
+    "description": "Recognizes gifted performers in music, theater, dance, or performance arts who show exceptional dedication and artistic excellence.",
+    "criteria_text": "Audition video or portfolio required.",
+    "tags": ["Performing Arts", "Arts", "Talent-Based"]
+  }
+]

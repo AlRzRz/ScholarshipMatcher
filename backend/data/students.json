@@ -1,0 +1,112 @@
+[
+  {
+    "id": "stu_001",
+    "name": "Alex Johnson",
+    "gpa": 3.8,
+    "major": "Computer Engineering",
+    "year": "2nd",
+    "activities": [
+      "Robotics Club President",
+      "Volunteer Math Tutor",
+      "Hackathon Team Lead"
+    ],
+    "achievements": [
+      "Built an autonomous drone navigation system",
+      "Regional robotics competition finalist",
+      "Created open-source embedded systems toolkit with 400+ GitHub stars"
+    ],
+    "background": "First-generation college student raised in a rural community. Developed a passion for engineering through repairing farm equipment and building early prototypes from scrap materials.",
+    "stories": [
+      "Alex led a team of four students to design an autonomous drone system capable of navigating obstacle courses without GPS. The project involved machine vision, PID control loops, and onboard sensor fusion, eventually earning recognition at a regional robotics competition.",
+      "Outside academics, Alex volunteers as a math tutor for underserved middle school students, helping them gain confidence in STEM subjects. Alex often incorporates hands-on demonstrations to make learning more accessible and engaging."
+    ]
+  },
+  {
+    "id": "stu_002",
+    "name": "Sophia Ramirez",
+    "gpa": 3.92,
+    "major": "Environmental Science",
+    "year": "3rd",
+    "activities": [
+      "Environmental Sustainability Club Committee Member",
+      "Campus Garden Volunteer",
+      "Local Park Cleanup Coordinator"
+    ],
+    "achievements": [
+      "Published research on microplastics in nearby rivers",
+      "Led a zero-waste initiative on campus reducing waste by 18%",
+      "Awarded the City Youth Environmental Leadership Medal"
+    ],
+    "background": "Daughter of immigrant parents who owned a small landscaping business. Grew up spending time outdoors and learning about ecosystems firsthand.",
+    "stories": [
+      "Sophia conducted a year-long research project analyzing microplastic contamination in local watersheds. She partnered with a regional environmental agency to collect samples, analyze them in a university lab, and propose policy recommendations.",
+      "Sophia organized community cleanups across three city parks, mobilizing over 120 volunteers. She developed an educational component to emphasize sustainable waste management and long-term environmental stewardship."
+    ]
+  },
+  {
+    "id": "stu_003",
+    "name": "David Kim",
+    "gpa": 3.67,
+    "major": "Nursing",
+    "year": "1st",
+    "activities": [
+      "Hospital Volunteer (Pediatrics)",
+      "Campus Mental Health Advocate",
+      "Red Cross CPR/First Aid Trainer"
+    ],
+    "achievements": [
+      "Completed 150+ volunteer hours in pediatric care",
+      "Developed a campus mental health awareness workshop",
+      "Certified nursing assistant (CNA) at 18"
+    ],
+    "background": "Raised in a multigenerational household and served as a caregiver for his grandparents during high school. This experience shaped his compassion and desire to pursue nursing.",
+    "stories": [
+      "David volunteers weekly at the city hospital, where he assists nurses with patient intake, comfort care, and activity facilitation for young patients. He often designs small games or reading sessions to help ease patient anxiety.",
+      "David launched a mental health workshop series on campus after noticing a lack of accessible resources for first-year students. The peer-led sessions cover stress management, coping techniques, and identifying signs of burnout."
+    ]
+  },
+  {
+    "id": "stu_004",
+    "name": "Lily Thompson",
+    "gpa": 4.0,
+    "major": "English & Creative Writing",
+    "year": "4th",
+    "activities": [
+      "Editor-in-Chief of Campus Literary Magazine",
+      "Local Library Youth Writing Mentor",
+      "Poetry Slam Organizer"
+    ],
+    "achievements": [
+      "Winner of the National Undergraduate Poetry Prize",
+      "Published short stories in three literary journals",
+      "Launched writing mentorship program for teens"
+    ],
+    "background": "Grew up in a low-income household where public libraries became a key resource and safe space. Developed a passion for storytelling as a way to process personal experiences.",
+    "stories": [
+      "Lily’s award-winning poems explore themes of identity, resilience, and intergenerational memory. She frequently performs at community events where she blends spoken-word rhythm with traditional verse structures.",
+      "As editor-in-chief of the university’s literary magazine, Lily expanded the publication’s reach by creating a digital platform and hosting student-led workshops, resulting in a 60% increase in submissions."
+    ]
+  },
+  {
+    "id": "stu_005",
+    "name": "Marcus Lee",
+    "gpa": 3.54,
+    "major": "Business Administration / Entrepreneurship",
+    "year": "3rd",
+    "activities": [
+      "Entrepreneurship Club Vice President",
+      "Startup Incubator Student Fellow",
+      "Financial Literacy Workshop Volunteer"
+    ],
+    "achievements": [
+      "Founded a startup offering low-cost 3D-printed prosthetics",
+      "Winner of campus startup pitch competition",
+      "Developed a financial literacy curriculum adopted by two local schools"
+    ],
+    "background": "Comes from a single-parent household and worked part-time throughout high school. Became passionate about entrepreneurship as a tool for social mobility and community empowerment.",
+    "stories": [
+      "Marcus co-founded a social impact startup that designs affordable 3D-printed prosthetic hands for children. His team partnered with local clinics to distribute prototypes and conducted user testing with families.",
+      "After witnessing financial struggles in his community, Marcus created a practical financial literacy program for high school students. The program covers budgeting, credit basics, and introductory investing, and is now used in two school districts."
+    ]
+  }
+]
