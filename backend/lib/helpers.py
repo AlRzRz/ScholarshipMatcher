@@ -1,6 +1,6 @@
 # [x] Generate schema and preload a file of 25 different scholarships
 # [x] Generate schema and preload a file of 5 different scholarship profiles
-# [ ] Analyze_scholarship function that analyzes a single scholarship entity
+# [x] Analyze_scholarship function that analyzes a single scholarship entity
 # [ ] Match function that matches a student entity with a scholarship entity and provides a score and reasoning
 # [ ] General essay generator function that generates a scholarship essay purely based off a student entity's data
 # [ ] Custom essay generator function generates a scholarship essay based off the student entity, scholarship entity, as well as their match analysis
