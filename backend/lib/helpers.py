@@ -7,7 +7,7 @@
 
 
 import os
-from anthropic import Anthropic, transform_schema
+from anthropic import Anthropic
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from schemas import Scholarship, ScholarshipAnalysis, Student, StudentScholarshipMatch, MATCHING_SYSTEM_PROMPT, GENERAL_UNI_ESSAY_SYSTEM_PROMPT, SPECIFIC_SCHOLARSHIP_ESSAY_SYSTEM_PROMPT
