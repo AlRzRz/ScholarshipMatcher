@@ -1,0 +1,532 @@
+'use client';
+
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+export interface Student {
+  id: string;
+  name: string;
+  country: string;
+  citizenship: string;
+  degree_level: string;
+  year_of_study: number;
+  field_of_study: string;
+  target_countries: string[];
+  target_universities: string[];
+  gpa: number;
+  financial_need: boolean;
+  work_experience: Array<{
+    role: string;
+    company: string;
+    details: string[];
+  }>;
+  extracurriculars: Array<{
+    role: string;
+    organization: string;
+    details: string[];
+  }>;
+  major: string;
+  year: string;
+  activities: string[];
+  achievements: string[];
+  background: string;
+  stories: string[];
+  goals: string;
+}
+
+interface StudentProfileContextType {
+  selectedStudent: Student | null;
+  setSelectedStudent: (student: Student | null) => void;
+  students: Student[];
+  loading: boolean;
+}
+
+const StudentProfileContext = createContext<StudentProfileContextType | undefined>(undefined);
+
+const STORAGE_KEY = 'scholarshipMatcher_selectedStudent';
+
+export function StudentProfileProvider({ children }: { children: ReactNode }) {
+  const [selectedStudent, setSelectedStudentState] = useState<Student | null>(null);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load students data
+  useEffect(() => {
+    // Try to fetch from API, fallback to hardcoded data
+    fetch('/api/students')
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error('API not available');
+      })
+      .then(data => {
+        setStudents(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Fallback: use hardcoded student data
+        const fallbackData: Student[] = [
+          {
+            id: "stu_001",
+            name: "Alex Johnson",
+            country: "United States",
+            citizenship: "United States",
+            degree_level: "bachelor",
+            year_of_study: 2,
+            field_of_study: "Computer Engineering",
+            target_countries: ["United States", "Canada"],
+            target_universities: ["Massachusetts Institute of Technology", "Carnegie Mellon University", "Georgia Institute of Technology"],
+            gpa: 3.8,
+            financial_need: true,
+            work_experience: [
+              {
+                role: "Student Research Assistant",
+                company: "University Robotics Lab",
+                details: [
+                  "Supported development of an autonomous drone navigation system using computer vision and sensor fusion",
+                  "Implemented and tuned PID control loops for stable flight in variable conditions",
+                  "Helped design and run obstacle course test environments for flight performance evaluation"
+                ]
+              },
+              {
+                role: "Farm Equipment Technician (Informal)",
+                company: "Family Farm",
+                details: [
+                  "Repaired and maintained farm machinery in a rural setting with limited access to professional services",
+                  "Repurposed scrap materials to build early engineering prototypes and custom tools",
+                  "Developed practical problem-solving skills by troubleshooting mechanical and electrical issues"
+                ]
+              }
+            ],
+            extracurriculars: [
+              {
+                role: "President",
+                organization: "University Robotics Club",
+                details: [
+                  "Led a team of students to design and build autonomous robots for regional competitions",
+                  "Organized weekly build sessions and technical workshops on embedded systems and robotics",
+                  "Coordinated the project that produced an autonomous drone recognized at a regional competition"
+                ]
+              },
+              {
+                role: "Volunteer Math Tutor",
+                organization: "Community Tutoring Program",
+                details: [
+                  "Tutored underserved middle school students in algebra and foundational math skills",
+                  "Designed hands-on activities and demonstrations to make STEM concepts more engaging",
+                  "Helped students build confidence in problem-solving and critical thinking"
+                ]
+              },
+              {
+                role: "Hackathon Team Lead",
+                organization: "Campus Hackathon Teams",
+                details: [
+                  "Organized and led multidisciplinary teams for 24–48 hour hackathons",
+                  "Coordinated responsibilities across hardware, software, and presentation workstreams",
+                  "Delivered functioning prototypes under tight deadlines and presented to judges"
+                ]
+              }
+            ],
+            major: "Computer Engineering",
+            year: "2nd",
+            activities: [
+              "Robotics Club President",
+              "Volunteer Math Tutor",
+              "Hackathon Team Lead"
+            ],
+            achievements: [
+              "Built an autonomous drone navigation system",
+              "Regional robotics competition finalist",
+              "Created open-source embedded systems toolkit with 400+ GitHub stars"
+            ],
+            background: "First-generation college student raised in a rural community. Developed a passion for engineering through repairing farm equipment and building early prototypes from scrap materials.",
+            stories: [
+              "Alex led a team of four students to design an autonomous drone system capable of navigating obstacle courses without GPS. The project involved machine vision, PID control loops, and onboard sensor fusion, eventually earning recognition at a regional robotics competition.",
+              "Outside academics, Alex volunteers as a math tutor for underserved middle school students, helping them gain confidence in STEM subjects. Alex often incorporates hands-on demonstrations to make learning more accessible and engaging."
+            ],
+            goals: "Alex aims to become an innovative computer engineer building accessible robotics and automation solutions that serve rural and underserved communities."
+          },
+          {
+            id: "stu_002",
+            name: "Sophia Ramirez",
+            country: "United States",
+            citizenship: "United States",
+            degree_level: "bachelor",
+            year_of_study: 3,
+            field_of_study: "Environmental Science",
+            target_countries: ["United States", "Canada", "United Kingdom"],
+            target_universities: ["University of California, Berkeley", "University of British Columbia", "University of Edinburgh"],
+            gpa: 3.92,
+            financial_need: true,
+            work_experience: [
+              {
+                role: "Undergraduate Research Assistant",
+                company: "University Environmental Science Lab",
+                details: [
+                  "Conducted field sampling and lab analysis for microplastic contamination in local rivers",
+                  "Collaborated with a regional environmental agency to align data collection with policy needs",
+                  "Co-authored a publication summarizing findings and proposing mitigation strategies"
+                ]
+              },
+              {
+                role: "Environmental Education Intern",
+                company: "Local Environmental Nonprofit",
+                details: [
+                  "Assisted in developing educational materials on waste reduction and recycling",
+                  "Supported workshops for community members on sustainable practices",
+                  "Helped organize data from surveys and events to measure program impact"
+                ]
+              }
+            ],
+            extracurriculars: [
+              {
+                role: "Committee Member",
+                organization: "Environmental Sustainability Club",
+                details: [
+                  "Helped design and implement a zero-waste initiative that reduced campus waste by 18%",
+                  "Coordinated collaboration with campus facilities and student organizations",
+                  "Organized awareness campaigns on sustainable consumption and recycling"
+                ]
+              },
+              {
+                role: "Volunteer",
+                organization: "Campus Garden",
+                details: [
+                  "Maintained garden beds and assisted with seasonal planting and harvesting",
+                  "Led educational tours for students about urban agriculture and biodiversity",
+                  "Helped implement composting practices to reduce food waste on campus"
+                ]
+              },
+              {
+                role: "Cleanup Coordinator",
+                organization: "City Park Cleanup Initiative",
+                details: [
+                  "Organized recurring cleanup events across three city parks, mobilizing over 120 volunteers",
+                  "Developed an educational component on long-term environmental stewardship",
+                  "Tracked waste collected and shared impact reports with community partners"
+                ]
+              }
+            ],
+            major: "Environmental Science",
+            year: "3rd",
+            activities: [
+              "Environmental Sustainability Club Committee Member",
+              "Campus Garden Volunteer",
+              "Local Park Cleanup Coordinator"
+            ],
+            achievements: [
+              "Published research on microplastics in nearby rivers",
+              "Led a zero-waste initiative on campus reducing waste by 18%",
+              "Awarded the City Youth Environmental Leadership Medal"
+            ],
+            background: "Daughter of immigrant parents who owned a small landscaping business. Grew up spending time outdoors and learning about ecosystems firsthand.",
+            stories: [
+              "Sophia conducted a year-long research project analyzing microplastic contamination in local watersheds. She partnered with a regional environmental agency to collect samples, analyze them in a university lab, and propose policy recommendations.",
+              "Sophia organized community cleanups across three city parks, mobilizing over 120 volunteers. She developed an educational component to emphasize sustainable waste management and long-term environmental stewardship."
+            ],
+            goals: "Sophia hopes to pursue a career in environmental research and policy, focusing on pollution reduction and sustainable resource management in vulnerable communities."
+          },
+          {
+            id: "stu_003",
+            name: "David Kim",
+            country: "United States",
+            citizenship: "United States",
+            degree_level: "bachelor",
+            year_of_study: 1,
+            field_of_study: "Nursing",
+            target_countries: ["United States"],
+            target_universities: ["Local University Medical Center", "State University School of Nursing"],
+            gpa: 3.67,
+            financial_need: false,
+            work_experience: [
+              {
+                role: "Certified Nursing Assistant (CNA)",
+                company: "Long-Term Care Facility",
+                details: [
+                  "Provided daily care and support for elderly residents, including mobility assistance and hygiene",
+                  "Monitored and documented vital signs under the supervision of registered nurses",
+                  "Communicated with patients and families to ensure comfort and understanding of care plans"
+                ]
+              },
+              {
+                role: "Family Caregiver",
+                company: "Private Residence",
+                details: [
+                  "Assisted grandparents with medication management, mobility, and daily living tasks",
+                  "Coordinated schedules and transportation for medical appointments",
+                  "Developed strong empathy and communication skills through long-term caregiving responsibilities"
+                ]
+              }
+            ],
+            extracurriculars: [
+              {
+                role: "Hospital Volunteer",
+                organization: "City Hospital Pediatrics Department",
+                details: [
+                  "Completed over 150 volunteer hours assisting nursing staff with patient intake and comfort care",
+                  "Designed games and reading activities to reduce anxiety for pediatric patients",
+                  "Helped maintain an organized and welcoming environment for families and visitors"
+                ]
+              },
+              {
+                role: "Mental Health Advocate",
+                organization: "Campus Mental Health Initiative",
+                details: [
+                  "Developed and led workshops for first-year students on stress management and coping skills",
+                  "Collaborated with campus counseling services to promote mental health resources",
+                  "Facilitated peer discussions to reduce stigma around seeking help"
+                ]
+              },
+              {
+                role: "CPR/First Aid Trainer",
+                organization: "Red Cross Campus Chapter",
+                details: [
+                  "Delivered certified CPR and first aid training sessions to students and community members",
+                  "Demonstrated emergency response techniques and supervised hands-on practice",
+                  "Promoted safety awareness and preparedness across campus"
+                ]
+              }
+            ],
+            major: "Nursing",
+            year: "1st",
+            activities: [
+              "Hospital Volunteer (Pediatrics)",
+              "Campus Mental Health Advocate",
+              "Red Cross CPR/First Aid Trainer"
+            ],
+            achievements: [
+              "Completed 150+ volunteer hours in pediatric care",
+              "Developed a campus mental health awareness workshop",
+              "Certified nursing assistant (CNA) at 18"
+            ],
+            background: "Raised in a multigenerational household and served as a caregiver for his grandparents during high school. This experience shaped his compassion and desire to pursue nursing.",
+            stories: [
+              "David volunteers weekly at the city hospital, where he assists nurses with patient intake, comfort care, and activity facilitation for young patients. He often designs small games or reading sessions to help ease patient anxiety.",
+              "David launched a mental health workshop series on campus after noticing a lack of accessible resources for first-year students. The peer-led sessions cover stress management, coping techniques, and identifying signs of burnout."
+            ],
+            goals: "David plans to become a compassionate nurse and mental health advocate, improving patient care and expanding access to emotional support resources for youth and families."
+          },
+          {
+            id: "stu_004",
+            name: "Lily Thompson",
+            country: "United States",
+            citizenship: "United States",
+            degree_level: "bachelor",
+            year_of_study: 4,
+            field_of_study: "English & Creative Writing",
+            target_countries: ["United States", "United Kingdom"],
+            target_universities: ["Columbia University", "New York University", "University of Oxford"],
+            gpa: 4.0,
+            financial_need: true,
+            work_experience: [
+              {
+                role: "Youth Writing Mentor",
+                company: "Local Public Library",
+                details: [
+                  "Led weekly creative writing sessions for teens focusing on poetry and short stories",
+                  "Provided individualized feedback on student writing and performance pieces",
+                  "Helped students prepare work for local contests and open mic events"
+                ]
+              },
+              {
+                role: "Freelance Writer",
+                company: "Various Literary Journals",
+                details: [
+                  "Published short stories and poems in multiple undergraduate and independent journals",
+                  "Met deadlines and responded to editorial feedback in a professional manner",
+                  "Built a portfolio showcasing themes of identity, resilience, and community"
+                ]
+              }
+            ],
+            extracurriculars: [
+              {
+                role: "Editor-in-Chief",
+                organization: "Campus Literary Magazine",
+                details: [
+                  "Oversaw editorial direction and publication schedule for the literary magazine",
+                  "Launched a digital platform and expanded workshops, increasing submissions by 60%",
+                  "Mentored junior editors and coordinated peer-review processes"
+                ]
+              },
+              {
+                role: "Youth Writing Mentor",
+                organization: "Local Public Library",
+                details: [
+                  "Designed age-appropriate writing prompts and activities for teen participants",
+                  "Encouraged youth to use storytelling as a tool for self-expression",
+                  "Organized a youth reading showcase to highlight participants' work"
+                ]
+              },
+              {
+                role: "Organizer",
+                organization: "Campus Poetry Slam Series",
+                details: [
+                  "Planned and hosted poetry slam events open to students and community members",
+                  "Promoted inclusive, supportive performance spaces for emerging poets",
+                  "Collaborated with local artists and organizations to feature guest performers"
+                ]
+              }
+            ],
+            major: "English & Creative Writing",
+            year: "4th",
+            activities: [
+              "Editor-in-Chief of Campus Literary Magazine",
+              "Local Library Youth Writing Mentor",
+              "Poetry Slam Organizer"
+            ],
+            achievements: [
+              "Winner of the National Undergraduate Poetry Prize",
+              "Published short stories in three literary journals",
+              "Launched writing mentorship program for teens"
+            ],
+            background: "Grew up in a low-income household where public libraries became a key resource and safe space. Developed a passion for storytelling as a way to process personal experiences.",
+            stories: [
+              "Lily's award-winning poems explore themes of identity, resilience, and intergenerational memory. She frequently performs at community events where she blends spoken-word rhythm with traditional verse structures.",
+              "As editor-in-chief of the university's literary magazine, Lily expanded the publication's reach by creating a digital platform and hosting student-led workshops, resulting in a 60% increase in submissions."
+            ],
+            goals: "Lily aspires to build a career as a writer and literary mentor, creating platforms that elevate underrepresented voices and expand access to storytelling opportunities for youth."
+          },
+          {
+            id: "stu_005",
+            name: "Marcus Lee",
+            country: "United States",
+            citizenship: "United States",
+            degree_level: "bachelor",
+            year_of_study: 3,
+            field_of_study: "Business Administration / Entrepreneurship",
+            target_countries: ["United States", "Singapore"],
+            target_universities: ["Stanford University", "University of Pennsylvania (Wharton)", "National University of Singapore"],
+            gpa: 3.54,
+            financial_need: true,
+            work_experience: [
+              {
+                role: "Co-Founder",
+                company: "Social Impact Prosthetics Startup",
+                details: [
+                  "Founded a startup offering low-cost 3D-printed prosthetic hands for children",
+                  "Coordinated partnerships with local clinics to pilot and distribute prototypes",
+                  "Managed budgeting, fundraising pitches, and user feedback collection"
+                ]
+              },
+              {
+                role: "Part-Time Retail Associate",
+                company: "Local Retail Store",
+                details: [
+                  "Worked part-time during high school to support family finances",
+                  "Developed customer service, cash handling, and time management skills",
+                  "Applied practical business lessons from retail experience to entrepreneurship projects"
+                ]
+              },
+              {
+                role: "Program Developer",
+                company: "Community Education Initiative",
+                details: [
+                  "Designed a financial literacy curriculum for high school students",
+                  "Collaborated with teachers and administrators to implement the program",
+                  "Adapted lessons on budgeting, credit, and saving to local community needs"
+                ]
+              }
+            ],
+            extracurriculars: [
+              {
+                role: "Vice President",
+                organization: "Entrepreneurship Club",
+                details: [
+                  "Organized pitch nights and networking events for aspiring student entrepreneurs",
+                  "Mentored younger students on business model development and presentation skills",
+                  "Coordinated with local founders and alumni to deliver guest talks"
+                ]
+              },
+              {
+                role: "Student Fellow",
+                organization: "Campus Startup Incubator",
+                details: [
+                  "Participated in accelerator-style programming focused on market research and product validation",
+                  "Refined the business model for the 3D-printed prosthetics venture",
+                  "Received feedback from mentors and investors on go-to-market strategy"
+                ]
+              },
+              {
+                role: "Workshop Facilitator",
+                organization: "Financial Literacy Workshop Series",
+                details: [
+                  "Led interactive sessions on budgeting, credit basics, and introductory investing",
+                  "Tailored examples and activities to the realities of low- and middle-income families",
+                  "Helped scale the program to two local school districts"
+                ]
+              }
+            ],
+            major: "Business Administration / Entrepreneurship",
+            year: "3rd",
+            activities: [
+              "Entrepreneurship Club Vice President",
+              "Startup Incubator Student Fellow",
+              "Financial Literacy Workshop Volunteer"
+            ],
+            achievements: [
+              "Founded a startup offering low-cost 3D-printed prosthetics",
+              "Winner of campus startup pitch competition",
+              "Developed a financial literacy curriculum adopted by two local schools"
+            ],
+            background: "Comes from a single-parent household and worked part-time throughout high school. Became passionate about entrepreneurship as a tool for social mobility and community empowerment.",
+            stories: [
+              "Marcus co-founded a social impact startup that designs affordable 3D-printed prosthetic hands for children. His team partnered with local clinics to distribute prototypes and conducted user testing with families.",
+              "After witnessing financial struggles in his community, Marcus created a practical financial literacy program for high school students. The program covers budgeting, credit basics, and introductory investing, and is now used in two school districts."
+            ],
+            goals: "Marcus aims to build socially responsible ventures that expand economic opportunity and financial literacy in underserved communities."
+          }
+        ];
+        setStudents(fallbackData);
+        setLoading(false);
+      });
+  }, []);
+
+  // Load selected student from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const student = JSON.parse(stored);
+          // Verify the student exists in the students array
+          if (students.length > 0 && students.find(s => s.id === student.id)) {
+            setSelectedStudentState(student);
+          }
+        } catch (e) {
+          console.error('Failed to parse stored student:', e);
+        }
+      }
+    }
+  }, [students]);
+
+  const setSelectedStudent = (student: Student | null) => {
+    setSelectedStudentState(student);
+    if (typeof window !== 'undefined') {
+      if (student) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(student));
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  };
+
+  return (
+    <StudentProfileContext.Provider
+      value={{
+        selectedStudent,
+        setSelectedStudent,
+        students,
+        loading,
+      }}
+    >
+      {children}
+    </StudentProfileContext.Provider>
+  );
+}
+
+export function useStudentProfile() {
+  const context = useContext(StudentProfileContext);
+  if (context === undefined) {
+    throw new Error('useStudentProfile must be used within a StudentProfileProvider');
+  }
+  return context;
+}
+
