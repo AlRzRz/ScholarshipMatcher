@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useStudentProfile } from '../contexts/StudentProfileContext';
 
 interface Scholarship {
@@ -16,8 +17,16 @@ interface Scholarship {
 export default function ScholarshipsPage() {
   const { selectedStudent, setSelectedStudent, students, loading: studentsLoading } = useStudentProfile();
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [allScholarships, setAllScholarships] = useState<Scholarship[]>([]);
   const [loading, setLoading] = useState(true);
   const [showProfileSelector, setShowProfileSelector] = useState(false);
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expired'>('all');
+  const [amountFilter, setAmountFilter] = useState<'all' | 'low' | 'medium' | 'high'>('all');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     // Try to fetch from API first, fallback to hardcoded data
@@ -28,6 +37,7 @@ export default function ScholarshipsPage() {
       })
       .then(data => {
         setScholarships(data);
+        setAllScholarships(data);
         setLoading(false);
       })
       .catch(() => {
@@ -261,9 +271,73 @@ export default function ScholarshipsPage() {
           }
         ];
         setScholarships(fallbackData);
+        setAllScholarships(fallbackData);
         setLoading(false);
       });
   }, []);
+
+  const getDaysUntilDeadline = (deadline: string) => {
+    const today = new Date();
+    const deadlineDate = new Date(deadline);
+    const diffTime = deadlineDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  // Get all unique tags from scholarships
+  const allTags = Array.from(
+    new Set(allScholarships.flatMap(sch => sch.tags))
+  ).sort();
+
+  // Filter scholarships based on active filters
+  const filteredScholarships = useMemo(() => {
+    let filtered = [...allScholarships];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(sch =>
+        sch.name.toLowerCase().includes(query) ||
+        sch.description.toLowerCase().includes(query) ||
+        sch.tags.some(tag => tag.toLowerCase().includes(query))
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(sch => {
+        const daysUntil = getDaysUntilDeadline(sch.deadline);
+        if (statusFilter === 'active') {
+          return daysUntil >= 0;
+        } else {
+          return daysUntil < 0;
+        }
+      });
+    }
+
+    // Amount filter
+    if (amountFilter !== 'all') {
+      filtered = filtered.filter(sch => {
+        if (amountFilter === 'low') return sch.amount < 4000;
+        if (amountFilter === 'medium') return sch.amount >= 4000 && sch.amount < 7000;
+        if (amountFilter === 'high') return sch.amount >= 7000;
+        return true;
+      });
+    }
+
+    // Tag filter
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(sch =>
+        selectedTags.some(tag => sch.tags.includes(tag))
+      );
+    }
+
+    return filtered;
+  }, [searchQuery, statusFilter, amountFilter, selectedTags, allScholarships]);
+
+  useEffect(() => {
+    setScholarships(filteredScholarships);
+  }, [filteredScholarships]);
 
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -283,28 +357,47 @@ export default function ScholarshipsPage() {
     });
   };
 
-  const getDaysUntilDeadline = (deadline: string) => {
-    const today = new Date();
-    const deadlineDate = new Date(deadline);
-    const diffTime = deadlineDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
   const truncateDescription = (text: string, maxLength: number = 120) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
 
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tag)
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setAmountFilter('all');
+    setSelectedTags([]);
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header Navbar - Minimal, sleek (shared with other pages) */}
-      <header className="border-b border-slate-200">
+      <header className="border-b border-blue-200">
         <div className="max-w-7xl mx-auto px-8 py-5">
           <div className="flex justify-between items-center">
-            <h1 className="text-lg font-semibold text-slate-900 tracking-tight">
-              ScholarshipMatcher
-            </h1>
+            <Link href="/" className="flex items-center gap-3 group">
+              {/* Modern Logo with Icon */}
+              <div className="relative">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
+                </div>
+              </div>
+              <h1 className="text-xl font-bold tracking-tight">
+                <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                  ScholarshipMatcher
+                </span>
+              </h1>
+            </Link>
             
             {/* Profile Selector */}
             <div className="relative">
@@ -392,11 +485,11 @@ export default function ScholarshipsPage() {
 
       {/* Profile Banner */}
       {selectedStudent && (
-        <div className="bg-slate-50 border-b border-slate-200">
+        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-200">
           <div className="max-w-7xl mx-auto px-8 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs text-slate-500 font-medium mb-1">Your Profile</div>
+                <div className="text-xs text-blue-600 font-medium mb-1">Your Profile</div>
                 <div className="flex items-center gap-4">
                   <div>
                     <div className="text-sm font-semibold text-slate-900">{selectedStudent.name}</div>
@@ -404,14 +497,14 @@ export default function ScholarshipsPage() {
                       {selectedStudent.field_of_study} • {selectedStudent.year} Year • GPA: {selectedStudent.gpa}
                     </div>
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-blue-600">
                     {selectedStudent.achievements.length} achievements • {selectedStudent.work_experience.length} work experiences
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedStudent(null)}
-                className="text-xs text-slate-500 hover:text-slate-900 transition-colors"
+                className="text-xs text-blue-600 hover:text-blue-800 transition-colors font-medium"
               >
                 Change Profile
               </button>
@@ -421,12 +514,12 @@ export default function ScholarshipsPage() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 px-8 py-12">
+      <main className="flex-1 px-8 py-12 bg-gradient-to-b from-white to-blue-50/30">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
           <div className="mb-10">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-0.5 bg-slate-900"></div>
+              <div className="w-16 h-0.5 bg-gradient-to-r from-blue-600 to-cyan-500"></div>
             </div>
             <h2 className="text-4xl font-light text-slate-900 text-center tracking-tight mb-3">
               Available Scholarships
@@ -434,6 +527,152 @@ export default function ScholarshipsPage() {
             <p className="text-slate-600 text-center font-light">
               Discover opportunities tailored to your profile
             </p>
+          </div>
+
+          {/* Filters Section */}
+          <div className="mb-8">
+            {/* Search and Filter Toggle */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  placeholder="Search scholarships by name, description, or tags&hellip;"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-3 pl-11 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
+                />
+                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="px-6 py-3 border-2 border-blue-500 text-blue-600 font-semibold text-sm rounded-lg hover:bg-blue-50 transition-all flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Filters
+                {(statusFilter !== 'all' || amountFilter !== 'all' || selectedTags.length > 0) && (
+                  <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
+                    {[statusFilter !== 'all' ? 1 : 0, amountFilter !== 'all' ? 1 : 0, selectedTags.length].reduce((a, b) => a + b, 0)}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Expanded Filters */}
+            {showFilters && (
+              <div className="bg-white border-2 border-blue-200 rounded-lg p-6 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                  {/* Status Filter */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900 mb-2">Status</label>
+                    <div className="flex flex-wrap gap-2">
+                      {(['all', 'active', 'expired'] as const).map((status) => (
+                        <button
+                          key={status}
+                          onClick={() => setStatusFilter(status)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            statusFilter === status
+                              ? 'bg-blue-600 text-white shadow-md'
+                              : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                          }`}
+                        >
+                          {status === 'all' ? 'All' : status === 'active' ? 'Active' : 'Expired'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Amount Filter */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900 mb-2">Amount Range</label>
+                    <div className="flex flex-wrap gap-2">
+                      {(['all', 'low', 'medium', 'high'] as const).map((amount) => (
+                        <button
+                          key={amount}
+                          onClick={() => setAmountFilter(amount)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            amountFilter === amount
+                              ? 'bg-cyan-600 text-white shadow-md'
+                              : 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100'
+                          }`}
+                        >
+                          {amount === 'all' ? 'All' : amount === 'low' ? '< $4K' : amount === 'medium' ? '$4K-$7K' : '> $7K'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Clear Filters */}
+                  <div className="flex items-end">
+                    <button
+                      onClick={clearFilters}
+                      className="w-full px-4 py-2 border-2 border-slate-300 text-slate-700 font-medium text-sm rounded-lg hover:bg-slate-50 transition-all"
+                    >
+                      Clear All Filters
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tags Filter */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">Tags</label>
+                  <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                    {allTags.map((tag) => (
+                      <button
+                        key={tag}
+                        onClick={() => toggleTag(tag)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                          selectedTags.includes(tag)
+                            ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Active Filters Display */}
+            {(statusFilter !== 'all' || amountFilter !== 'all' || selectedTags.length > 0 || searchQuery) && (
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                <span className="text-slate-600 font-medium">Active filters:</span>
+                {searchQuery && (
+                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full flex items-center gap-2">
+                    Search: &quot;{searchQuery}&quot;
+                    <button onClick={() => setSearchQuery('')} className="hover:text-blue-900">×</button>
+                  </span>
+                )}
+                {statusFilter !== 'all' && (
+                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full flex items-center gap-2">
+                    {statusFilter === 'active' ? 'Active' : 'Expired'}
+                    <button onClick={() => setStatusFilter('all')} className="hover:text-blue-900">×</button>
+                  </span>
+                )}
+                {amountFilter !== 'all' && (
+                  <span className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full flex items-center gap-2">
+                    {amountFilter === 'low' ? '< $4K' : amountFilter === 'medium' ? '$4K-$7K' : '> $7K'}
+                    <button onClick={() => setAmountFilter('all')} className="hover:text-cyan-900">×</button>
+                  </span>
+                )}
+                {selectedTags.map((tag) => (
+                  <span key={tag} className="px-3 py-1 bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 rounded-full flex items-center gap-2">
+                    {tag}
+                    <button onClick={() => toggleTag(tag)} className="hover:text-blue-900">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Results Count */}
+            <div className="mt-4 text-sm text-slate-600">
+              Showing <span className="font-semibold text-blue-600">{scholarships.length}</span> of <span className="font-semibold">{allScholarships.length}</span> scholarships
+            </div>
           </div>
 
           {/* Loading State */}
@@ -454,16 +693,16 @@ export default function ScholarshipsPage() {
                 return (
                   <div
                     key={scholarship.id}
-                    className="group bg-white border border-slate-200 rounded-lg p-6 hover:border-slate-900 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                    className="group bg-white border-2 border-blue-100 rounded-xl p-6 hover:border-blue-400 hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-white to-blue-50/50"
                     onClick={() => window.location.href = `/scholarships/${scholarship.id}`}
                   >
                     {/* Header with Amount */}
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-slate-900 mb-2 group-hover:text-slate-900 transition-colors">
+                        <h3 className="text-xl font-semibold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
                           {scholarship.name}
                         </h3>
-                        <div className="text-2xl font-light text-slate-900">
+                        <div className="text-2xl font-light bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
                           {formatAmount(scholarship.amount)}
                         </div>
                       </div>
@@ -479,45 +718,45 @@ export default function ScholarshipsPage() {
                       {scholarship.tags.slice(0, 3).map((tag, index) => (
                         <span
                           key={index}
-                          className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 rounded-md"
+                          className="px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md border border-blue-200"
                         >
                           {tag}
                         </span>
                       ))}
                       {scholarship.tags.length > 3 && (
-                        <span className="px-2.5 py-1 text-xs font-medium text-slate-500">
+                        <span className="px-2.5 py-1 text-xs font-medium text-cyan-600 bg-cyan-50 rounded-md border border-cyan-200">
                           +{scholarship.tags.length - 3}
                         </span>
                       )}
                     </div>
 
                     {/* Deadline */}
-                    <div className="pt-4 border-t border-slate-100">
+                    <div className="pt-4 border-t border-blue-100">
                       <div className="flex justify-between items-center">
                         <div>
-                          <div className="text-xs text-slate-500 font-medium mb-1">Deadline</div>
+                          <div className="text-xs text-blue-600 font-medium mb-1">Deadline</div>
                           <div className={`text-sm font-medium ${
                             isExpired 
                               ? 'text-red-600' 
                               : isUrgent 
-                                ? 'text-amber-600' 
-                                : 'text-slate-700'
+                                ? 'text-green-600' 
+                                : 'text-blue-700'
                           }`}>
                             {formatDate(scholarship.deadline)}
                           </div>
                         </div>
                         {!isExpired && (
                           <div className="text-right">
-                            <div className="text-xs text-slate-500 font-medium mb-1">Days Left</div>
+                            <div className="text-xs text-blue-600 font-medium mb-1">Days Left</div>
                             <div className={`text-sm font-semibold ${
-                              isUrgent ? 'text-amber-600' : 'text-slate-700'
+                              isUrgent ? 'text-green-600' : 'text-cyan-600'
                             }`}>
                               {daysUntil}
                             </div>
                           </div>
                         )}
                         {isExpired && (
-                          <span className="px-2 py-1 text-xs font-medium text-red-600 bg-red-50 rounded">
+                          <span className="px-2 py-1 text-xs font-medium text-red-600 bg-red-50 rounded border border-red-200">
                             Expired
                           </span>
                         )}
@@ -525,8 +764,8 @@ export default function ScholarshipsPage() {
                     </div>
 
                     {/* View Details Link */}
-                    <div className="mt-4 pt-4 border-t border-slate-100">
-                      <div className="flex items-center text-sm font-medium text-slate-900 group-hover:text-slate-900 transition-colors">
+                    <div className="mt-4 pt-4 border-t border-blue-100">
+                      <div className="flex items-center text-sm font-medium text-blue-600 group-hover:text-blue-800 transition-colors">
                         View Details
                         <span className="ml-2 transition-transform duration-300 group-hover:translate-x-1">→</span>
                       </div>
@@ -548,10 +787,13 @@ export default function ScholarshipsPage() {
       </main>
 
       {/* Footer - Minimal, clean (shared with other pages) */}
-      <footer className="border-t border-slate-200">
+      <footer className="border-t border-blue-200">
         <div className="max-w-7xl mx-auto px-8 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-sm font-medium text-slate-900">ScholarshipMatcher</div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-600 to-cyan-500"></div>
+              <div className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">ScholarshipMatcher</div>
+            </div>
             <div className="text-xs text-slate-500">Made by: Areeba, Nour, AR</div>
           </div>
         </div>

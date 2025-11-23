@@ -109,4 +109,4 @@ async def api_specific_essay(data: SpecificEssayRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Specific essay generation failed: {str(e)}")
 
-# To run: uvicorn api:app --reloa
+# To run: uvicorn api:app --reload

@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useStudentProfile } from '../../contexts/StudentProfileContext';
 
@@ -14,6 +15,29 @@ interface Scholarship {
   tags: string[];
 }
 
+interface ScholarshipWeights {
+  academics: number;
+  leadership: number;
+  community_service: number;
+  financial_need: number;
+  innovation: number;
+}
+
+interface ScholarshipAnalysis {
+  scholarship_id: string;
+  weights: ScholarshipWeights;
+  tone: string[];
+  priority_summary: string;
+  evidence_snippets: string[];
+}
+
+interface StudentScholarshipMatch {
+  student_id: string;
+  scholarship_id: string;
+  match_score: number;
+  top_reasons: string[];
+}
+
 export default function ScholarshipDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -23,6 +47,12 @@ export default function ScholarshipDetailPage() {
   const [scholarship, setScholarship] = useState<Scholarship | null>(null);
   const [loading, setLoading] = useState(true);
   const [showProfileSelector, setShowProfileSelector] = useState(false);
+  const [analysis, setAnalysis] = useState<ScholarshipAnalysis | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [match, setMatch] = useState<StudentScholarshipMatch | null>(null);
+  const [matchLoading, setMatchLoading] = useState(false);
+  const [matchError, setMatchError] = useState<string | null>(null);
 
   useEffect(() => {
     // Fetch scholarship data
@@ -273,6 +303,103 @@ export default function ScholarshipDetailPage() {
       });
   }, [scholarshipId]);
 
+  // Fetch scholarship analysis when scholarship is loaded
+  useEffect(() => {
+    if (!scholarship) return;
+
+    let cancelled = false;
+
+    const fetchAnalysis = async () => {
+      setAnalysisLoading(true);
+      setAnalysisError(null);
+
+      try {
+        const res = await fetch('http://localhost:8000/api/analyze-scholarship', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(scholarship),
+        });
+
+        if (!res.ok) {
+          throw new Error(`Analysis failed: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        
+        if (!cancelled) {
+          setAnalysis(data);
+          setAnalysisLoading(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Error analyzing scholarship:', err);
+          setAnalysisError(err instanceof Error ? err.message : 'Failed to analyze scholarship');
+          setAnalysisLoading(false);
+        }
+      }
+    };
+
+    fetchAnalysis();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [scholarship]);
+
+  // Fetch student-scholarship match when scholarship, analysis, and student are all available
+  useEffect(() => {
+    if (!scholarship || !analysis || !selectedStudent) {
+      setMatch(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchMatch = async () => {
+      setMatchLoading(true);
+      setMatchError(null);
+
+      try {
+        const res = await fetch('http://localhost:8000/api/match-student', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            student: selectedStudent,
+            scholarship: scholarship,
+            analysis: analysis,
+          }),
+        });
+
+        if (!res.ok) {
+          throw new Error(`Match failed: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        
+        if (!cancelled) {
+          setMatch(data);
+          setMatchLoading(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Error matching student to scholarship:', err);
+          setMatchError(err instanceof Error ? err.message : 'Failed to match student to scholarship');
+          setMatchLoading(false);
+        }
+      }
+    };
+
+    fetchMatch();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [scholarship, analysis, selectedStudent]);
+
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -348,12 +475,24 @@ export default function ScholarshipDetailPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header Navbar - Minimal, sleek (shared with other pages) */}
-      <header className="border-b border-slate-200">
+      <header className="border-b border-blue-200">
         <div className="max-w-7xl mx-auto px-8 py-5">
           <div className="flex justify-between items-center">
-            <h1 className="text-lg font-semibold text-slate-900 tracking-tight">
-              ScholarshipMatcher
-            </h1>
+            <Link href="/" className="flex items-center gap-3 group">
+              {/* Modern Logo with Icon */}
+              <div className="relative">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
+                </div>
+              </div>
+              <h1 className="text-xl font-bold tracking-tight">
+                <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                  ScholarshipMatcher
+                </span>
+              </h1>
+            </Link>
             
             {/* Profile Selector - Same as scholarships page */}
             <div className="relative">
@@ -441,11 +580,11 @@ export default function ScholarshipDetailPage() {
 
       {/* Profile Banner - Same as scholarships page */}
       {selectedStudent && (
-        <div className="bg-slate-50 border-b border-slate-200">
+        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-200">
           <div className="max-w-7xl mx-auto px-8 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs text-slate-500 font-medium mb-1">Your Profile</div>
+                <div className="text-xs text-blue-600 font-medium mb-1">Your Profile</div>
                 <div className="flex items-center gap-4">
                   <div>
                     <div className="text-sm font-semibold text-slate-900">{selectedStudent.name}</div>
@@ -461,12 +600,12 @@ export default function ScholarshipDetailPage() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 px-8 py-12">
+      <main className="flex-1 px-8 py-12 bg-gradient-to-b from-white to-blue-50/30">
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}
           <button
             onClick={() => router.push('/scholarships')}
-            className="mb-8 text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-2"
+            className="mb-8 text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-2 font-medium"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -477,34 +616,34 @@ export default function ScholarshipDetailPage() {
           {/* Scholarship Header */}
           <div className="mb-8">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-0.5 bg-slate-900"></div>
+              <div className="w-16 h-0.5 bg-gradient-to-r from-blue-600 to-cyan-500"></div>
             </div>
             <h1 className="text-4xl lg:text-5xl font-light text-slate-900 leading-tight tracking-tight mb-4">
               {scholarship.name}
             </h1>
-            <div className="text-3xl font-light text-slate-900 mb-6">
+            <div className="text-3xl font-light bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent mb-6">
               {formatAmount(scholarship.amount)}
             </div>
           </div>
 
           {/* Scholarship Details Card */}
-          <div className="bg-white border border-slate-200 rounded-lg p-8 mb-6">
+          <div className="bg-white border-2 border-blue-100 rounded-xl p-8 mb-6 shadow-sm">
             {/* Key Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pb-8 border-b border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pb-8 border-b border-blue-100">
               <div>
-                <div className="text-xs text-slate-500 font-medium mb-2">Deadline</div>
+                <div className="text-xs text-blue-600 font-medium mb-2">Deadline</div>
                 <div className={`text-lg font-semibold ${
                   isExpired 
                     ? 'text-red-600' 
                     : isUrgent 
-                      ? 'text-amber-600' 
-                      : 'text-slate-900'
+                      ? 'text-green-600' 
+                      : 'text-blue-700'
                 }`}>
                   {formatDate(scholarship.deadline)}
                 </div>
                 {!isExpired && (
                   <div className={`text-sm mt-1 ${
-                    isUrgent ? 'text-amber-600' : 'text-slate-600'
+                    isUrgent ? 'text-green-600' : 'text-cyan-600'
                   }`}>
                     {daysUntil} {daysUntil === 1 ? 'day' : 'days'} remaining
                   </div>
@@ -514,12 +653,12 @@ export default function ScholarshipDetailPage() {
                 )}
               </div>
               <div>
-                <div className="text-xs text-slate-500 font-medium mb-2">Tags</div>
+                <div className="text-xs text-blue-600 font-medium mb-2">Tags</div>
                 <div className="flex flex-wrap gap-2">
                   {scholarship.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 text-xs font-medium text-slate-700 bg-slate-100 rounded-md"
+                      className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md border border-blue-200"
                     >
                       {tag}
                     </span>
@@ -539,7 +678,7 @@ export default function ScholarshipDetailPage() {
                   </p>
                 </div>
                 
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-6">
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-6">
                   <h3 className="text-base font-semibold text-slate-900 mb-3">Eligibility Requirements</h3>
                   <p className="text-slate-700 leading-relaxed font-light">
                     {scholarship.criteria_text}
@@ -556,7 +695,7 @@ export default function ScholarshipDetailPage() {
                     <div className="flex items-center gap-2">
                       <span className="font-medium">Application Deadline:</span>
                       <span className={`font-light ${
-                        isExpired ? 'text-red-600' : isUrgent ? 'text-amber-600' : 'text-slate-700'
+                        isExpired ? 'text-red-600' : isUrgent ? 'text-green-600' : 'text-blue-700'
                       }`}>
                         {formatDate(scholarship.deadline)}
                         {!isExpired && ` (${daysUntil} ${daysUntil === 1 ? 'day' : 'days'} remaining)`}
@@ -567,15 +706,289 @@ export default function ScholarshipDetailPage() {
               </div>
             </div>
 
+            {/* AI Analysis of Scholarship */}
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-slate-900 mb-6">AI Analysis of Scholarship</h2>
+              
+              {analysisLoading && (
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-8 text-center">
+                  <div className="relative w-16 h-16 mx-auto mb-4">
+                    <div className="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                  <div className="text-blue-700 font-medium">Analyzing scholarship...</div>
+                </div>
+              )}
+
+              {analysisError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                  <div className="text-red-800 font-medium mb-2">Analysis Error</div>
+                  <div className="text-red-700 text-sm font-light">{analysisError}</div>
+                </div>
+              )}
+
+              {analysis && !analysisLoading && (
+                <div className="space-y-6">
+                  {/* Priority Summary */}
+                  <div>
+                    <h3 className="text-base font-semibold text-slate-900 mb-3">What This Scholarship Values Most</h3>
+                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-6">
+                      <p className="text-slate-700 leading-relaxed font-light">
+                        {analysis.priority_summary}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Weights */}
+                  <div>
+                    <h3 className="text-base font-semibold text-slate-900 mb-4">Evaluation Weights</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-4">
+                        <div className="text-xs text-blue-600 font-medium mb-2">Academics</div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 bg-blue-200 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-600 to-cyan-500 h-2 rounded-full transition-all"
+                              style={{ width: `${analysis.weights.academics * 100}%` }}
+                            ></div>
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 w-12 text-right">
+                            {(analysis.weights.academics * 100).toFixed(0)}%
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-4">
+                        <div className="text-xs text-blue-600 font-medium mb-2">Leadership</div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 bg-blue-200 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-600 to-cyan-500 h-2 rounded-full transition-all"
+                              style={{ width: `${analysis.weights.leadership * 100}%` }}
+                            ></div>
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 w-12 text-right">
+                            {(analysis.weights.leadership * 100).toFixed(0)}%
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-4">
+                        <div className="text-xs text-blue-600 font-medium mb-2">Community Service</div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 bg-blue-200 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-600 to-cyan-500 h-2 rounded-full transition-all"
+                              style={{ width: `${analysis.weights.community_service * 100}%` }}
+                            ></div>
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 w-12 text-right">
+                            {(analysis.weights.community_service * 100).toFixed(0)}%
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-4">
+                        <div className="text-xs text-blue-600 font-medium mb-2">Financial Need</div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 bg-blue-200 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-600 to-cyan-500 h-2 rounded-full transition-all"
+                              style={{ width: `${analysis.weights.financial_need * 100}%` }}
+                            ></div>
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 w-12 text-right">
+                            {(analysis.weights.financial_need * 100).toFixed(0)}%
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-4">
+                        <div className="text-xs text-blue-600 font-medium mb-2">Innovation</div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 bg-blue-200 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-600 to-cyan-500 h-2 rounded-full transition-all"
+                              style={{ width: `${analysis.weights.innovation * 100}%` }}
+                            ></div>
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 w-12 text-right">
+                            {(analysis.weights.innovation * 100).toFixed(0)}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recommended Tone */}
+                  {analysis.tone && analysis.tone.length > 0 && (
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-900 mb-3">Recommended Writing Tone</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {analysis.tone.map((toneItem, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-md capitalize border border-blue-200"
+                          >
+                            {toneItem.replace('_', ' ')}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Evidence Snippets */}
+                  {analysis.evidence_snippets && analysis.evidence_snippets.length > 0 && (
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-900 mb-3">Key Evidence from Scholarship Description</h3>
+                      <div className="space-y-3">
+                        {analysis.evidence_snippets.map((snippet, index) => (
+                          <div key={index} className="bg-gradient-to-br from-blue-50 to-cyan-50 border-l-4 border-blue-600 pl-4 py-3 rounded">
+                            <p className="text-slate-700 leading-relaxed font-light text-sm">
+                              {snippet}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Compatibility Section */}
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-slate-900 mb-6">AI Compatibility Score</h2>
+              
+              {!selectedStudent && (
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-8 text-center">
+                  <div className="text-blue-700 font-medium mb-2">Select a student profile to see compatibility analysis</div>
+                  <div className="text-blue-600 text-sm font-light">Choose a profile from the header to view how well it matches this scholarship</div>
+                </div>
+              )}
+
+              {selectedStudent && matchLoading && (
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-8 text-center">
+                  <div className="relative w-16 h-16 mx-auto mb-4">
+                    <div className="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                  <div className="text-blue-700 font-medium">Analyzing compatibility...</div>
+                </div>
+              )}
+
+              {selectedStudent && matchError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                  <div className="text-red-800 font-medium mb-2">Compatibility Analysis Error</div>
+                  <div className="text-red-700 text-sm font-light">{matchError}</div>
+                </div>
+              )}
+
+              {selectedStudent && match && !matchLoading && (
+                <div className="space-y-6">
+                  {/* Match Score */}
+                  <div>
+                    <h3 className="text-base font-semibold text-slate-900 mb-4">Compatibility Score</h3>
+                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-8">
+                      <div className="flex flex-col items-center">
+                        <div className="relative w-32 h-32 mb-4">
+                          <svg className="transform -rotate-90 w-32 h-32">
+                            <circle
+                              cx="64"
+                              cy="64"
+                              r="56"
+                              stroke="currentColor"
+                              strokeWidth="8"
+                              fill="none"
+                              className="text-blue-200"
+                            />
+                            <circle
+                              cx="64"
+                              cy="64"
+                              r="56"
+                              stroke="currentColor"
+                              strokeWidth="8"
+                              fill="none"
+                              strokeDasharray={`${2 * Math.PI * 56}`}
+                              strokeDashoffset={`${2 * Math.PI * 56 * (1 - match.match_score / 100)}`}
+                              className={`transition-all duration-500 ${
+                                match.match_score >= 80
+                                  ? 'text-green-600'
+                                  : match.match_score >= 60
+                                    ? 'text-blue-600'
+                                    : match.match_score >= 40
+                                      ? 'text-cyan-600'
+                                      : 'text-red-600'
+                              }`}
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center">
+                              <div className={`text-4xl font-semibold ${
+                                match.match_score >= 80
+                                  ? 'text-green-600'
+                                  : match.match_score >= 60
+                                    ? 'text-blue-600'
+                                    : match.match_score >= 40
+                                      ? 'text-amber-600'
+                                      : 'text-red-600'
+                              }`}>
+                                {match.match_score}
+                              </div>
+                              <div className="text-xs text-slate-500 font-medium mt-1">out of 100</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className={`text-sm font-semibold ${
+                          match.match_score >= 80
+                            ? 'text-green-600'
+                            : match.match_score >= 60
+                              ? 'text-blue-600'
+                              : match.match_score >= 40
+                                ? 'text-amber-600'
+                                : 'text-red-600'
+                        }`}>
+                          {match.match_score >= 80
+                            ? 'Excellent Match'
+                            : match.match_score >= 60
+                              ? 'Strong Match'
+                              : match.match_score >= 40
+                                ? 'Moderate Match'
+                                : 'Weak Match'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Top Reasons */}
+                  {match.top_reasons && match.top_reasons.length > 0 && (
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-900 mb-4">Why This Match?</h3>
+                      <div className="space-y-3">
+                        {match.top_reasons.map((reason, index) => (
+                          <div key={index} className="bg-gradient-to-br from-blue-50 to-cyan-50 border-l-4 border-blue-600 pl-4 py-3 rounded">
+                            <div className="flex items-start gap-3">
+                              <div className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white flex items-center justify-center text-xs font-semibold mt-0.5">
+                                {index + 1}
+                              </div>
+                              <p className="text-slate-700 leading-relaxed font-light flex-1">
+                                {reason}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Action Button */}
-            <div className="pt-6 border-t border-slate-200">
+            <div className="pt-6 border-t border-blue-100">
               <button
                 onClick={() => router.push(`/scholarships/${scholarshipId}/essay`)}
                 disabled={isExpired}
-                className={`w-full px-6 py-3 font-medium text-sm rounded-lg transition-all duration-300 ${
+                className={`w-full px-6 py-3 font-semibold text-sm rounded-lg transition-all duration-300 ${
                   isExpired
                     ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                    : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-lg'
+                    : 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:from-blue-700 hover:to-cyan-600 hover:shadow-lg'
                 }`}
               >
                 {isExpired ? 'Application Closed' : 'Apply Now'}
@@ -588,10 +1001,10 @@ export default function ScholarshipDetailPage() {
 
           {/* Expanded Student Profile (if selected) */}
           {selectedStudent && (
-            <div className="bg-white border border-slate-200 rounded-lg p-8 mb-6">
+            <div className="bg-white border-2 border-blue-100 rounded-xl p-8 mb-6 shadow-sm">
               <div className="mb-6">
                 <div className="flex justify-center mb-4">
-                  <div className="w-16 h-0.5 bg-slate-900"></div>
+                  <div className="w-16 h-0.5 bg-gradient-to-r from-blue-600 to-cyan-500"></div>
                 </div>
                 <h2 className="text-2xl font-light text-slate-900 text-center tracking-tight mb-2">
                   Your Profile
@@ -666,8 +1079,8 @@ export default function ScholarshipDetailPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 mb-4">Work Experience</h3>
                     <div className="space-y-4">
-                      {selectedStudent.work_experience.map((work, index) => (
-                        <div key={index} className="bg-slate-50 border border-slate-200 rounded-lg p-5">
+                        {selectedStudent.work_experience.map((work, index) => (
+                        <div key={index} className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-5">
                           <div className="mb-3">
                             <div className="text-base font-semibold text-slate-900">{work.role}</div>
                             <div className="text-sm text-slate-600 font-light">{work.company}</div>
@@ -693,7 +1106,7 @@ export default function ScholarshipDetailPage() {
                     <h3 className="text-lg font-semibold text-slate-900 mb-4">Extracurricular Activities</h3>
                     <div className="space-y-4">
                       {selectedStudent.extracurriculars.map((activity, index) => (
-                        <div key={index} className="bg-slate-50 border border-slate-200 rounded-lg p-5">
+                        <div key={index} className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-5">
                           <div className="mb-3">
                             <div className="text-base font-semibold text-slate-900">{activity.role}</div>
                             <div className="text-sm text-slate-600 font-light">{activity.organization}</div>
@@ -733,7 +1146,7 @@ export default function ScholarshipDetailPage() {
                     <h3 className="text-lg font-semibold text-slate-900 mb-4">Notable Experiences</h3>
                     <div className="space-y-4">
                       {selectedStudent.stories.map((story, index) => (
-                        <div key={index} className="bg-slate-50 border border-slate-200 rounded-lg p-5">
+                        <div key={index} className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-5">
                           <p className="text-slate-700 leading-relaxed font-light">
                             {story}
                           </p>
@@ -751,7 +1164,7 @@ export default function ScholarshipDetailPage() {
                       {selectedStudent.target_universities.map((university, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 text-sm font-light text-slate-700 bg-slate-100 rounded-md"
+                          className="px-3 py-1 text-sm font-light text-blue-700 bg-blue-100 rounded-md border border-blue-200"
                         >
                           {university}
                         </span>
@@ -766,10 +1179,13 @@ export default function ScholarshipDetailPage() {
       </main>
 
       {/* Footer - Minimal, clean (shared with other pages) */}
-      <footer className="border-t border-slate-200">
+      <footer className="border-t border-blue-200">
         <div className="max-w-7xl mx-auto px-8 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-sm font-medium text-slate-900">ScholarshipMatcher</div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-600 to-cyan-500"></div>
+              <div className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">ScholarshipMatcher</div>
+            </div>
             <div className="text-xs text-slate-500">Made by: Areeba, Nour, AR</div>
           </div>
         </div>
