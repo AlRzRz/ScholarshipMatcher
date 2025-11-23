@@ -1,7 +1,7 @@
 # [x] Generate schema and preload a file of 25 different scholarships
 # [x] Generate schema and preload a file of 5 different scholarship profiles
 # [x] Analyze_scholarship function that analyzes a single scholarship entity
-# [ ] Match function that matches a student entity with a scholarship entity and provides a score and reasoning
+# [x] Match function that matches a student entity with a scholarship entity and provides a score and reasoning
 # [ ] General essay generator function that generates a scholarship essay purely based off a student entity's data
 # [ ] Custom essay generator function generates a scholarship essay based off the student entity, scholarship entity, as well as their match analysis
 
@@ -10,7 +10,7 @@ import os
 from anthropic import Anthropic, transform_schema
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from schemas import Scholarship, ScholarshipAnalysis, Student, StudentScholarshipMatch, MATCHING_SYSTEM_PROMPT
+from schemas import Scholarship, ScholarshipAnalysis, Student, StudentScholarshipMatch, MATCHING_SYSTEM_PROMPT, GENERAL_UNI_ESSAY_SYSTEM_PROMPT, SPECIFIC_SCHOLARSHIP_ESSAY_SYSTEM_PROMPT
 import json
 from pathlib import Path
 
@@ -59,12 +59,58 @@ def match_student_scholarship(client, student: Student, scholarship: Scholarship
     return response.parsed_output
 
 
-def generate_general_essay():
-    pass
+def generate_general_essay(client, student: Student) -> str:
+    response = client.beta.messages.parse(
+        model="claude-sonnet-4-5",
+        max_tokens=1800,
+        betas=["structured-outputs-2025-11-13"],
+        system=GENERAL_UNI_ESSAY_SYSTEM_PROMPT,
+        messages=[
+            {
+                "role": "user",
+                "content": (
+                    "Using the STUDENT profile below, write a general-purpose university "
+                    "application essay suitable for a Common App-style personal statement.\n\n"
+                    "Return ONLY the final essay text, with no explanation or commentary.\n\n"
+                    f"STUDENT PROFILE (JSON):\n{student.model_dump_json()}"
+                ),
+            },
+        ]
+    )
+
+    return response.content[0].text
 
 
-def generate_specific_essay():
-    pass
+def generate_specific_essay(
+    client,
+    student: Student,
+    scholarship: Scholarship,
+    scholarship_analysis: ScholarshipAnalysis,
+    match_analysis: StudentScholarshipMatch,
+) -> str:
+    response = client.beta.messages.parse(
+        model="claude-sonnet-4-5",
+        max_tokens=1800,
+        betas=["structured-outputs-2025-11-13"],
+        system=SPECIFIC_SCHOLARSHIP_ESSAY_SYSTEM_PROMPT,
+        messages=[
+            {
+                "role": "user",
+                "content": (
+                    "Using the provided STUDENT, SCHOLARSHIP, SCHOLARSHIP_ANALYSIS, and "
+                    "MATCH_ANALYSIS, write a scholarship application essay from the student's "
+                    "perspective that is tailored to this specific scholarship.\n\n"
+                    "Return ONLY the final essay text, with no explanation or commentary.\n\n"
+                    f"STUDENT (JSON):\n{student.model_dump_json()}\n\n"
+                    f"SCHOLARSHIP (JSON):\n{scholarship.model_dump_json()}\n\n"
+                    f"SCHOLARSHIP_ANALYSIS (JSON):\n{scholarship_analysis.model_dump_json()}\n\n"
+                    f"MATCH_ANALYSIS (JSON):\n{match_analysis.model_dump_json()}\n"
+                ),
+            },
+        ],
+    )
+
+    return response.content[0].text
 
 
 
@@ -99,6 +145,9 @@ if __name__ == '__main__':
     scholarship: Scholarship = Scholarship(**first_scholarship)
     student: Student = Student(**first_student)
 
+
+    
+
     try:
         print('Getting Scholarship Analysis...\n')
         scholarship_analysis = analyze_scholarship(client=client, scholarship_data=scholarship)
@@ -110,9 +159,27 @@ if __name__ == '__main__':
         print('Match Data Received...\n')
         print(matched_data)
 
+        print('\n\nTYPES:\n\n')
+        print(type(matched_data))
+        print(type(scholarship_analysis))
+
     except Exception as e:
         print(f"ERROR Happened: {e}")
 
+    print('\n\nSPECIFIC ESSAY GENERATED BELOW\n\n')
+
+    try:
+        print(generate_specific_essay(client, student=student, scholarship=scholarship, scholarship_analysis=scholarship_analysis, match_analysis=matched_data))
+    except Exception as e:
+        print(f'ERORR HAPPENED: {e}')
+
+    print('\n\nGENERAL ESSAY GENERATED BELOW\n\n')
+
+    try:
+        print(generate_general_essay(client, student=student))
+    except Exception as e:
+        print(f'ERORR HAPPENED: {e}')
+    
 
 
     # script_dir = os.path.dirname(os.path.abspath(__file__))
