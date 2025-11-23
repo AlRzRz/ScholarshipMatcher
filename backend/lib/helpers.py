@@ -10,7 +10,7 @@ import os
 from anthropic import Anthropic, transform_schema
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from schemas import Scholarship, ScholarshipAnalysis
+from schemas import Scholarship, ScholarshipAnalysis, Student, StudentScholarshipMatch, MATCHING_SYSTEM_PROMPT
 import json
 from pathlib import Path
 
@@ -33,28 +33,104 @@ def analyze_scholarship(client, scholarship_data: Scholarship) -> ScholarshipAna
     return response.parsed_output
 
 
+def match_student_scholarship(client, student: Student, scholarship: Scholarship, scholarship_analysis: ScholarshipAnalysis) -> StudentScholarshipMatch:
+    
+    response = client.beta.messages.parse(
+        max_tokens=1024,
+        model="claude-sonnet-4-5",
+        betas=["structured-outputs-2025-11-13"],
+        system=MATCHING_SYSTEM_PROMPT,
+        messages=[
+            {
+                "role": "user",
+                "content": (
+                    "Evaluate the match between the following STUDENT and SCHOLARSHIP, using the "
+                    "SCHOLARSHIP_ANALYSIS to guide what matters most.\n\n"
+                    "Return only the structured match result.\n\n"
+                    f"SCHOLARSHIP (raw):\n{scholarship.model_dump_json()}\n\n"
+                    f"SCHOLARSHIP_ANALYSIS:\n{scholarship_analysis.model_dump_json()}\n\n"
+                    f"STUDENT:\n{student.model_dump_json()}\n"
+                ),
+            },
+        ],
+        output_format=StudentScholarshipMatch,
+    )
+
+    return response.parsed_output
+
+
+def generate_general_essay():
+    pass
+
+
+def generate_specific_essay():
+    pass
 
 
 
 if __name__ == '__main__':
 
     # Testing Stuff Below
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    data_file_path = os.path.join(script_dir, '..', 'data', 'scholarships.json')
-
-
-    try:
-        with open(data_file_path, 'r') as file:
-            data = json.load(file)
-    except Exception as e:
-        print(f'Error: {e}')
 
     load_dotenv()
     client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 
-    first_scholarship = data[0]
-    # print(first_scholarship)
-    scholarship_data: Scholarship = Scholarship(**first_scholarship)
-    # print(scholarship_data.model_json_schema())
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    scholarship_file_path = os.path.join(script_dir, '..', 'data', 'scholarships.json')
+    students_file_path = os.path.join(script_dir, '..', 'data', 'students.json')
 
-    print(analyze_scholarship(client=client, scholarship_data=scholarship_data))
+
+    try:
+        with open(scholarship_file_path, 'r') as file:
+            scholarship_data = json.load(file)
+    except Exception as e:
+        print(f'Error: {e}')
+
+    try:
+        with open(students_file_path, 'r') as file:
+            student_data = json.load(file)
+    except Exception as e:
+        print(f'Error: {e}')
+    
+
+    first_scholarship = scholarship_data[0]
+    first_student = student_data[0]
+
+    scholarship: Scholarship = Scholarship(**first_scholarship)
+    student: Student = Student(**first_student)
+
+    try:
+        print('Getting Scholarship Analysis...\n')
+        scholarship_analysis = analyze_scholarship(client=client, scholarship_data=scholarship)
+        print('Received Scholarship Analysis...\n')
+        print(scholarship_analysis)
+
+        print('Matching Student & Scholarship (including the prev. analysis)\n')
+        matched_data = match_student_scholarship(client=client, student=student, scholarship=scholarship, scholarship_analysis=scholarship_analysis)
+        print('Match Data Received...\n')
+        print(matched_data)
+
+    except Exception as e:
+        print(f"ERROR Happened: {e}")
+
+
+
+    # script_dir = os.path.dirname(os.path.abspath(__file__))
+    # data_file_path = os.path.join(script_dir, '..', 'data', 'scholarships.json')
+
+
+    # try:
+    #     with open(data_file_path, 'r') as file:
+    #         data = json.load(file)
+    # except Exception as e:
+    #     print(f'Error: {e}')
+
+   
+    
+
+    # first_scholarship = data[0]
+    # # print(first_scholarship)
+    # scholarship_data: Scholarship = Scholarship(**first_scholarship)
+    # # print(scholarship_data.model_json_schema())
+
+    # print(analyze_scholarship(client=client, scholarship_data=scholarship_data))
